@@ -13,7 +13,7 @@ async function main() {
     cryptoDevsNFTContract
   );
 
-  await deployCryptoDevsToken.deployed();
+  await deployedCryptoDevsTokenContract.deployed();
 
   console.log(
     "The address of the cryptodev token contract is : ",
