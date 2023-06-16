@@ -10,6 +10,7 @@ import {
   TOKEN_CONTRACT_ABI,
   TOKEN_CONTRACT_ADDRESS,
 } from "../constants";
+import { parseEther } from "ethers/lib/utils";
 
 export default function Home() {
   const zero = BigNumber.from(0);
@@ -19,6 +20,8 @@ export default function Home() {
     useState(zero);
 
   const [tokenAmount, setTokenAmount] = useState(zero);
+  const [tokensToBeClaimed,setTokensToBeClaimed] = useState(zero)
+  const [loading, setLoading] = useState(false);
   const web3ModalRef = useRef();
 
   const getProviderOrSigner = async (needSigner = false) => {
@@ -46,6 +49,49 @@ export default function Home() {
     }
   };
 
+  const getBalanceOfCryptoDevTokens = async () => {
+    try {
+      const provider = await getProviderOrSigner();
+      const tokenContract = new Contract(
+        TOKEN_CONTRACT_ADDRESS,
+        TOKEN_CONTRACT_ABI,
+        provider
+      );
+
+      const signer = await getProviderOrSigner(true);
+      const address = await signer.getAddress();
+
+      const balance = await tokenContract.balanceOf(address);
+
+      setBalanceOfCryptoDevTokens(balance);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const getTotalTokensMinted = async () => {
+    try {
+      const provider = await getProviderOrSigner();
+      const tokenContract = new Contract(
+        TOKEN_CONTRACT_ADDRESS,
+        TOKEN_CONTRACT_ABI,
+        provider
+      );
+
+      const _tokensMinted = await tokenContract.totalSupply();
+      await setTokensMinted(_tokensMinted);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const getTokensToBeClaimed =async () =>{
+    const provider = await getProviderOrSigner()
+    const nftContract = await new Contract(
+      NFT_CONTRACT_ADDRESS,NFT_CONTRACT_ABI , provider
+    )
+  }
+
   const mintCryptoDevToken = async (amount) => {
     try {
       const signer = await getProviderOrSigner(true);
@@ -54,6 +100,20 @@ export default function Home() {
         TOKEN_CONTRACT_ABI,
         signer
       );
+
+      const value = 0.01 * amount;
+
+      const tx = await tokenContract.mint(amount, {
+        value: parseEther(toString(value)),
+      });
+
+      setLoading(true);
+
+      await tx.wait();
+      setLoading(false);
+      window.alert("Successfully minted crypto dev tokens");
+      await getBalanceOfCryptoDevTokens();
+      await getTotalTokensMinted();
     } catch (error) {
       console.log(error);
     }
@@ -71,6 +131,17 @@ export default function Home() {
   }, []);
 
   const renderButton = () => {
+    if (loading) {
+      return (
+        <div>
+          <button className={styles.button}>Loding...</button>
+        </div>
+      );
+    }
+
+    if(tokensToBeClaimed){
+      return()
+    }
     return (
       <div style={{ display: "flex-col" }}>
         <div>
