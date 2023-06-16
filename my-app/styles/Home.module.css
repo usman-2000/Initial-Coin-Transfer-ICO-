@@ -52,6 +52,9 @@
   cursor: pointer;
   margin-bottom: 2%;
 }
+.button:hover {
+  background-color: #1c1c24;
+}
 @media (max-width: 1000px) {
   .main {
     width: 100%;

@@ -20,7 +20,7 @@ export default function Home() {
     useState(zero);
 
   const [tokenAmount, setTokenAmount] = useState(zero);
-  const [tokensToBeClaimed,setTokensToBeClaimed] = useState(zero)
+  const [tokensToBeClaimed, setTokensToBeClaimed] = useState(zero);
   const [loading, setLoading] = useState(false);
   const web3ModalRef = useRef();
 
@@ -85,12 +85,38 @@ export default function Home() {
     }
   };
 
-  const getTokensToBeClaimed =async () =>{
-    const provider = await getProviderOrSigner()
+  const getTokensToBeClaimed = async () => {
+    const provider = await getProviderOrSigner();
     const nftContract = await new Contract(
-      NFT_CONTRACT_ADDRESS,NFT_CONTRACT_ABI , provider
-    )
-  }
+      NFT_CONTRACT_ADDRESS,
+      NFT_CONTRACT_ABI,
+      provider
+    );
+
+    const tokenContract = await new Contract(
+      TOKEN_CONTRACT_ADDRESS,
+      TOKEN_CONTRACT_ABI,
+      provider
+    );
+    const signer = await getProviderOrSigner(true);
+    const address = await signer.getAddress();
+
+    var balance = await nftContract.balanceOf();
+
+    if (balance === 0) {
+      setTokensToBeClaimed(zero);
+    } else {
+      var amount = 0;
+      for (let i = 0; i < amount; i++) {
+        const tokenId = await nftContract.tokenOfOwnerByIndex(address, i);
+        const claimed = await tokenContract.tokenIdClaimed(tokenId);
+        if (!claimed) {
+          amount++;
+        }
+      }
+      setTokensToBeClaimed(BigNumber.from(amount));
+    }
+  };
 
   const mintCryptoDevToken = async (amount) => {
     try {
@@ -139,8 +165,17 @@ export default function Home() {
       );
     }
 
-    if(tokensToBeClaimed){
-      return()
+    if (tokensToBeClaimed > 0) {
+      return (
+        <div>
+          <div className={styles.description}>
+            {tokensToBeClaimed * 10} tokens can be claimed
+          </div>
+          <button className={styles.button} onClick={claimCryptoDevTokens}>
+            Claim Tokens
+          </button>
+        </div>
+      );
     }
     return (
       <div style={{ display: "flex-col" }}>
