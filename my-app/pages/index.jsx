@@ -22,6 +22,7 @@ export default function Home() {
   const [tokenAmount, setTokenAmount] = useState(zero);
   const [tokensToBeClaimed, setTokensToBeClaimed] = useState(zero);
   const [loading, setLoading] = useState(false);
+  const [isOwner, setIsOwner] = useState(false);
   const web3ModalRef = useRef();
 
   const getProviderOrSigner = async (needSigner = false) => {
@@ -86,35 +87,64 @@ export default function Home() {
   };
 
   const getTokensToBeClaimed = async () => {
-    const provider = await getProviderOrSigner();
-    const nftContract = await new Contract(
-      NFT_CONTRACT_ADDRESS,
-      NFT_CONTRACT_ABI,
-      provider
-    );
+    try {
+      const provider = await getProviderOrSigner();
+      const nftContract = await new Contract(
+        NFT_CONTRACT_ADDRESS,
+        NFT_CONTRACT_ABI,
+        provider
+      );
 
-    const tokenContract = await new Contract(
-      TOKEN_CONTRACT_ADDRESS,
-      TOKEN_CONTRACT_ABI,
-      provider
-    );
-    const signer = await getProviderOrSigner(true);
-    const address = await signer.getAddress();
+      const tokenContract = await new Contract(
+        TOKEN_CONTRACT_ADDRESS,
+        TOKEN_CONTRACT_ABI,
+        provider
+      );
+      const signer = await getProviderOrSigner(true);
+      const address = await signer.getAddress();
 
-    var balance = await nftContract.balanceOf();
+      var balance = await nftContract.balanceOf();
 
-    if (balance === 0) {
-      setTokensToBeClaimed(zero);
-    } else {
-      var amount = 0;
-      for (let i = 0; i < amount; i++) {
-        const tokenId = await nftContract.tokenOfOwnerByIndex(address, i);
-        const claimed = await tokenContract.tokenIdClaimed(tokenId);
-        if (!claimed) {
-          amount++;
+      if (balance === 0) {
+        setTokensToBeClaimed(zero);
+      } else {
+        var amount = 0;
+        for (let i = 0; i < amount; i++) {
+          const tokenId = await nftContract.tokenOfOwnerByIndex(address, i);
+          const claimed = await tokenContract.tokenIdClaimed(tokenId);
+          if (!claimed) {
+            amount++;
+          }
         }
+        setTokensToBeClaimed(BigNumber.from(amount));
       }
-      setTokensToBeClaimed(BigNumber.from(amount));
+    } catch (error) {
+      console.error(error);
+      setTokensToBeClaimed(zero);
+    }
+  };
+
+  const claimCryptoDevTokens = async () => {
+    try {
+      const signer = await getProviderOrSigner(true);
+      const tokenContract = await new Contract(
+        TOKEN_CONTRACT_ADDRESS,
+        TOKEN_CONTRACT_ABI,
+        signer
+      );
+
+      const tx = await tokenContract.claim();
+      setLoading(true);
+      tx.wait();
+      setLoading(false);
+
+      window.alert("Sucessfully claimed Crypto Dev Tokens");
+
+      await getBalanceOfCryptoDevTokens();
+      await getTokensToBeClaimed();
+      await getTotalTokensMinted();
+    } catch (error) {
+      console.log(error);
     }
   };
 
@@ -142,6 +172,50 @@ export default function Home() {
       await getTotalTokensMinted();
     } catch (error) {
       console.log(error);
+    }
+  };
+
+  const getOwner = async () => {
+    try {
+      const provider = await getProviderOrSigner();
+      const tokenContract = await new Contract(
+        TOKEN_CONTRACT_ADDRESS,
+        TOKEN_CONTRACT_ABI,
+        provider
+      );
+
+      const _owner = await tokenContract.owner();
+
+      const signer = await getProviderOrSigner(true);
+      const address = await signer.getAddress();
+
+      if (address.toLowerCase() === _owner.toLowerCase()) {
+        setIsOwner(true);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const WithdrawCoins = async () => {
+    try {
+      const signer = await getProviderOrSigner(true);
+      const tokenContract = await new Contract(
+        TOKEN_CONTRACT_ADDRESS,
+        TOKEN_CONTRACT_ABI,
+        signer
+      );
+
+      const tx = await tokenContract.withdraw();
+
+      setLoading(true);
+      await tx.wait();
+      setLoading(false);
+
+      await getOwner();
+    } catch (err) {
+      console.error(err);
+      window.alert(err.reason);
     }
   };
 
@@ -222,6 +296,19 @@ export default function Home() {
                 minted
               </div>
               {renderButton()}
+              {isOwner ? (
+                <div>
+                  {loading ? (
+                    <button className={styles.button}>Loading...</button>
+                  ) : (
+                    <button className={styles.button} onClick={WithdrawCoins}>
+                      Withdraw Coins
+                    </button>
+                  )}
+                </div>
+              ) : (
+                ""
+              )}
             </div>
           ) : (
             <button className={styles.button} onClick={connectWallet}>
@@ -229,7 +316,13 @@ export default function Home() {
             </button>
           )}
         </div>
+        <div>
+          <img src="./0.svg" alt="" className={styles.image} />
+        </div>
       </div>
+      <footer className={styles.footer}>
+        Made with &#10084; by Crypto Devs and URK
+      </footer>
     </div>
   );
 }

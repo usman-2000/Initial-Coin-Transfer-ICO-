@@ -10,9 +10,11 @@
 .footer {
   display: flex;
   padding: 2rem 0;
-  border-top: 1px solid #eaeaea;
+  border-top: 1px dashed #eaeaea;
   justify-content: center;
   align-items: center;
+  background-color: #1c1c24;
+  /* color: #1c1c24; */
 }
 
 .image {
@@ -43,8 +45,8 @@
 
 .button {
   border-radius: 4px;
-  background-color: blue;
-  border: none;
+  background-color: transparent;
+  border: 1px solid white;
   color: #ffffff;
   font-size: 15px;
   padding: 5px;
