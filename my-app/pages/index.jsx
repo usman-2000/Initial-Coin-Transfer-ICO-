@@ -135,7 +135,7 @@ export default function Home() {
 
       const tx = await tokenContract.claim();
       setLoading(true);
-      tx.wait();
+      await tx.wait();
       setLoading(false);
 
       window.alert("Sucessfully claimed Crypto Dev Tokens");
@@ -160,7 +160,7 @@ export default function Home() {
       const value = 0.01 * amount;
 
       const tx = await tokenContract.mint(amount, {
-        value: parseEther(toString(value)),
+        value: parseEther(value.toString()),
       });
 
       setLoading(true);
@@ -228,7 +228,11 @@ export default function Home() {
       });
     }
     connectWallet();
-  }, []);
+    getTotalTokensMinted();
+    getBalanceOfCryptoDevTokens();
+    getTokensToBeClaimed();
+    getOwner();
+  }, [walletConnected]);
 
   const renderButton = () => {
     if (loading) {
