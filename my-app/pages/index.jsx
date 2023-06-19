@@ -2,8 +2,8 @@ import Head from "next/head";
 import Image from "next/image";
 import styles from "@/styles/Home.module.css";
 import { useEffect, useRef, useState } from "react";
-import Web3Modal, { providers } from "web3modal";
-import { BigNumber, Contract, utils } from "ethers";
+import Web3Modal from "web3modal";
+import { BigNumber, Contract, utils, providers } from "ethers";
 import {
   NFT_CONTRACT_ABI,
   NFT_CONTRACT_ADDRESS,
@@ -255,9 +255,10 @@ export default function Home() {
       <div style={{ display: "flex-col" }}>
         <div>
           <input
+            className={styles.input}
             type="number"
             placeholder="Amount of tokens"
-            onChange={(e) => setTokenAmount(BigNumber.formatEther(e))}
+            onChange={(e) => setTokenAmount(BigNumber.from(e.target.value))}
           />
           <button
             className={styles.button}

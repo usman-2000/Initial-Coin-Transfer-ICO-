@@ -45,8 +45,8 @@
 
 .button {
   border-radius: 4px;
-  background-color: transparent;
-  border: 1px solid white;
+  background-color: blue;
+  border: none;
   color: #ffffff;
   font-size: 15px;
   padding: 5px;
