@@ -105,7 +105,7 @@ export default function Home() {
 
       var balance = await nftContract.balanceOf();
 
-      if (balance === 0) {
+      if (balance === zero) {
         setTokensToBeClaimed(zero);
       } else {
         var amount = 0;
